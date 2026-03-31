@@ -1,5 +1,4 @@
 from parsers.base import Message, Conversation, ConversationParser
-from dataclasses import fields
 
 
 def test_message_fields():
