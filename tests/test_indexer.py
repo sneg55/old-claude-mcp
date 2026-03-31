@@ -5,6 +5,7 @@ import sys
 import json
 import tempfile
 import os
+from pathlib import Path
 from indexer import init_db, insert_conversations
 from parsers.base import Conversation, Message
 
@@ -93,8 +94,9 @@ def test_cli_indexes_file(sample_conversations, tmp_path):
     export_path.write_text(json.dumps(fixture))
     db_path = tmp_path / "history.db"
 
+    indexer_path = Path(__file__).parent.parent / "indexer.py"
     result = subprocess.run(
-        [sys.executable, "indexer.py", str(export_path), "--db", str(db_path)],
+        [sys.executable, str(indexer_path), str(export_path), "--db", str(db_path)],
         capture_output=True,
         text=True,
     )

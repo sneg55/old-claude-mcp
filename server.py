@@ -1,27 +1,34 @@
 from __future__ import annotations
 import argparse
 import sqlite3
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 from mcp.server.fastmcp import FastMCP
 
 # Pure functions (testable without MCP)
 
 def search_history(conn: sqlite3.Connection, query: str, limit: int = 10) -> list[dict]:
-    rows = conn.execute(
-        """
-        SELECT
-            c.uuid,
-            c.name,
-            c.created_at,
-            snippet(conversations_fts, 2, '[', ']', '...', 32) AS snippet,
-            rank
-        FROM conversations c
-        JOIN conversations_fts ON c.rowid = conversations_fts.rowid
-        WHERE conversations_fts MATCH ?
-        ORDER BY rank
-        LIMIT ?
-        """,
-        (query, limit),
-    ).fetchall()
+    if not query or not query.strip():
+        return []
+    try:
+        rows = conn.execute(
+            """
+            SELECT
+                c.uuid,
+                c.name,
+                c.created_at,
+                snippet(conversations_fts, -1, '[', ']', '...', 32) AS snippet,
+                rank
+            FROM conversations c
+            JOIN conversations_fts ON c.rowid = conversations_fts.rowid
+            WHERE conversations_fts MATCH ?
+            ORDER BY rank
+            LIMIT ?
+            """,
+            (query, limit),
+        ).fetchall()
+    except Exception:
+        return []
     return [
         {"uuid": r[0], "name": r[1], "created_at": r[2], "snippet": r[3], "rank": r[4]}
         for r in rows
@@ -79,8 +86,16 @@ def list_conversations(conn: sqlite3.Connection, limit: int = 20, after: str | N
 # MCP server
 
 def make_server(db_path: str) -> FastMCP:
-    mcp = FastMCP("chat-history")
     conn = sqlite3.connect(db_path, check_same_thread=False)
+
+    @asynccontextmanager
+    async def lifespan(server: FastMCP) -> AsyncIterator[None]:
+        try:
+            yield
+        finally:
+            conn.close()
+
+    mcp = FastMCP("chat-history", lifespan=lifespan)
 
     @mcp.tool(description="Search chat history using full-text search. Returns ranked conversations with snippets.")
     def search_history_tool(query: str, limit: int = 10) -> list[dict]:
