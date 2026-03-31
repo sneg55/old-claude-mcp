@@ -40,12 +40,12 @@ def main() -> None:
 
     if args.provider == "claude":
         from parsers.claude import ClaudeParser
-        parser_cls = ClaudeParser()
+        provider_parser = ClaudeParser()
     else:
         raise ValueError(f"Unknown provider: {args.provider}")
 
     print(f"Parsing {args.export}...")
-    conversations = parser_cls.parse(args.export)
+    conversations = provider_parser.parse(args.export)
     print(f"Found {len(conversations)} conversations.")
 
     conn = sqlite3.connect(args.db)
