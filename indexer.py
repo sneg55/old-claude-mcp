@@ -29,3 +29,32 @@ def insert_conversations(conn: sqlite3.Connection, conversations: list[Conversat
     # Rebuild FTS index
     conn.execute("INSERT INTO conversations_fts(conversations_fts) VALUES('rebuild')")
     conn.commit()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Index a Claude chat export into SQLite.")
+    parser.add_argument("export", help="Path to conversations.json export file")
+    parser.add_argument("--db", default="history.db", help="Output SQLite DB path (default: history.db)")
+    parser.add_argument("--provider", default="claude", choices=["claude"], help="Export provider format")
+    args = parser.parse_args()
+
+    if args.provider == "claude":
+        from parsers.claude import ClaudeParser
+        parser_cls = ClaudeParser()
+    else:
+        raise ValueError(f"Unknown provider: {args.provider}")
+
+    print(f"Parsing {args.export}...")
+    conversations = parser_cls.parse(args.export)
+    print(f"Found {len(conversations)} conversations.")
+
+    conn = sqlite3.connect(args.db)
+    init_db(conn)
+    insert_conversations(conn, conversations)
+    conn.close()
+
+    print(f"Done. DB written to {args.db}")
+
+
+if __name__ == "__main__":
+    main()
