@@ -45,7 +45,7 @@ def test_get_conversation_unknown_uuid(db):
     assert messages == []
 
 
-def test_get_conversation_truncates_long_thread(db, monkeypatch):
+def test_get_conversation_truncates_long_thread(db):
     import indexer
     # Insert a conversation with a very long message
     conn = db
