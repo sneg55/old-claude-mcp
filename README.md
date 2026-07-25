@@ -1,5 +1,11 @@
 # old-claude-mcp
 
+[![License](https://img.shields.io/github/license/sneg55/old-claude-mcp)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/sneg55/old-claude-mcp)](https://github.com/sneg55/old-claude-mcp/stargazers)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)
+![MCP](https://img.shields.io/badge/MCP-000000?logo=modelcontextprotocol&logoColor=fff)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=fff)
+
 Anthropic lets you export your Claude conversation history but provides no way to import it into a new account. This is a local MCP server that makes the export actually useful — index your old conversations into SQLite and Claude can search them automatically in new sessions.
 
 **Background:** [Claude lets you export your data but won't let you use it](https://sawinyh.com/blog/claude-export-no-import)
